@@ -9,11 +9,7 @@ import gym_foo
 # Just disables the warning, doesn't enable AVX/FMA
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-#
-# from gym_foo.envs.FooEnv import FooEnv
-# tmp = FooEnv()
-#
-# print(tmp.render())
+
 create_env = lambda: gym.make('foo-v0').unwrapped
 env = create_env()
 
@@ -44,9 +40,10 @@ model = Sequential([
   Dense(16, activation='relu', input_shape=env.observation_space.shape),
   Dense(16, activation='relu'),
   Dense(16, activation='relu'),
+
 ])
 # Create Deep Q-Learning Network agent
-agent = hk.agent.DQN(model, actions=env.action_space.n, nsteps=1)
+agent = hk.agent.DQN(model, actions=env.action_space.n, nsteps=2)
 
 
 def plot_rewards(episode_rewards, episode_steps, done=False):
@@ -55,7 +52,7 @@ def plot_rewards(episode_rewards, episode_steps, done=False):
     plt.ylabel('Reward')
     for ed, steps in zip(episode_rewards, episode_steps):
         plt.plot(steps, ed)
-        plt.pause(0.001)
+        plt.pause(0.05)
         plt.draw()
 
         # plt.draw()# Pause a bit so that the graph is updated
@@ -63,7 +60,7 @@ def plot_rewards(episode_rewards, episode_steps, done=False):
 
 # Create simulation, train and then test
 sim = hk.Simulation(create_env, agent)
-sim.train(max_steps=5000, visualize=True,plot=plot_rewards)
+sim.train(max_steps=5000, visualize=True)
 sim.test(max_steps=1000)
 
 

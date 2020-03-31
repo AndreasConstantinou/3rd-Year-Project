@@ -105,25 +105,25 @@ class FooEnv(gym.Env):
             print("tube back")
             xLead = 550
             xBackTube=650
-            yTube1=random.randrange(50, 150)
-            yTube2=random.randrange(300, 500)
+            yTube1=random.randrange(70, 150)
+            yTube2=random.randrange(280, 500)
 
 
         # terminate when box is out of bounds
-        if boxY < 0 or boxY > 500:
+        if boxY-50 < 0 or boxY > 500:
             print("box out of bounds")
-            self.reward += 0.0
+            self.reward -= 1.5
             done = True
 
         # terminate when box collides with tubes
-        if xLead <= 100:
+        if 0 <= xLead <= 100 :
             if (boxY > yTube2) or (boxY-50<yTube1):
                 print("tube hit")
-                self.reward += 0.0
+                self.reward -= 1.5
                 done = True
 
         if not done:
-            self.reward += 0.1
+            self.reward += 0.05
 
         self.state = (boxY, xLead, yTube1, yTube2, velocity, xBackTube)
 
@@ -133,7 +133,7 @@ class FooEnv(gym.Env):
 
 
     def reset(self):
-        low = np.array([200, 500, 50, 300,0,600])
+        low = np.array([200, 500, 70, 280,0,600])
         high = np.array([450, 500, 150, 500,0,600])
 
         self.state = self.np_random.uniform(low, high, size=(6,))
