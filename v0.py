@@ -1,10 +1,12 @@
-import tensorflow
-from tensorflow.python.keras.layers import Input, Dense, Dropout, Conv2D, MaxPool2D, Activation, Flatten
+import tensorflow as tf
+from tensorflow.python.keras.engine.training import Model
+from tensorflow.python.keras.layers import Input, Dense, Dropout, Conv2D, MaxPool2D, Activation, Flatten, RNN, ReLU, \
+    ELU, LSTM
 from tensorflow.python.keras.models import Sequential
 import matplotlib.pyplot as plt
 import numpy as np
 import huskarl as hk
-from huskarl.policy import Greedy, GaussianEpsGreedy
+# from huskarl.policy import Greedy, GaussianEpsGreedy
 
 import gym
 import gym_foo
@@ -45,16 +47,15 @@ model = Sequential([
     Dense(10, activation='relu'),
 ])
 
+# inputs = Input(shape=(6,))
+# x = Dense(4, activation='relu')(inputs)
+# outputs = Dense(5, activation='relu')(x)
+# model = Model(inputs=inputs, outputs=outputs)
+
+
 # Create Deep Q-Learning Network agent
-# agent = hk.agent.DQN(model, actions=env.action_space.n, nsteps=2)
-
-
-# We will be running multiple concurrent environment instances
-instances = 4
-# Create a policy for each instance with a different distribution for epsilon
-policy = [hk.policy.Greedy()] + [hk.policy.GaussianEpsGreedy(eps, 0.1) for eps in np.arange(0, 1, 1 / (instances - 1))]
-# Create Advantage Actor-Critic agent
-agent = hk.agent.A2C(model, actions=env.action_space.n, nsteps=2, instances=instances, policy=policy)
+agent = hk.agent.DQN(model, actions=env.action_space.n, nsteps=7, enable_double_dqn=True, enable_dueling_network=False)
+# nsteps=5
 
 
 def plot_rewards(episode_rewards, episode_steps, done=False):
@@ -78,9 +79,9 @@ def plot_rewardsA2C(episode_rewards, episode_steps, done=False):
 
 # Create simulation, train and then test
 sim = hk.Simulation(create_env, agent)
-# add visualise=True for dqn (plot_rewards)
+# add visualize=True for dqn (plot_rewards)
 # add visualize=True, plot= plot_rewardsA2C for A2C optional
-sim.train(max_steps=6000)
+sim.train(max_steps=10000, visualize=True,plot=plot_rewards)
 
 for layer in model.layers:
     weights = layer.get_weights()

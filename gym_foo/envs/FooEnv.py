@@ -56,8 +56,7 @@ class FooEnv(gym.Env):
 
         # valid actions are either (0,1) jump or not jump
         self.action_space = spaces.Discrete(2)
-        # recording-> 19 minutes in (low np.array[] and high np.array[])
-        # dtype not to float but Integer
+
         self.low = np.array([self.boxYPosition, self.xLeadMin,self.frstTubeHeightMin, self.scndTubeHeightMin,
                              self.velocityMin,self.xBackTubeMin])
         self.high = np.array([self.boxYPositionMax, self.xLeadMax,self.frstTubeHeightMax,
@@ -79,17 +78,16 @@ class FooEnv(gym.Env):
         assert self.action_space.contains(action), "%r (%s) invalid" % (action, type(action))
         state = self.state
         # use these variables to do stuff and then put them back to state
-        boxY, xLead, yTube1,yTube2,velocity,xBackTube = state
-
+        boxY, xLead, yTube1,yTube2,velocity, xBackTube = state
 
         # update the speed and y position of the box
-
         velocity += self.gravity
         boxY += velocity
         done = False
+
         # initialise the action JUMP
         if action == 1:
-            velocity = 1
+            velocity = 1.1
             boxY += velocity
 
         # Moving the Tubes
@@ -98,6 +96,7 @@ class FooEnv(gym.Env):
 
         # Award reward when the tubes have passed the box
         if xLead == -50:
+            # print("reward")
             self.reward += 5.0
 
         # transfering the tube
@@ -105,8 +104,10 @@ class FooEnv(gym.Env):
             print("tube back")
             xLead = 550
             xBackTube=650
-            yTube1=random.randrange(50, 170)
-            yTube2=random.randrange(270, 400)
+            yTube1=random.randrange(50, 270)
+            # 150 is the space in-between the pipes
+            yTube2=yTube1+150
+            # yTube2=random.randrange(270, 400)
 
 
         # terminate when box is out of bounds
@@ -118,7 +119,8 @@ class FooEnv(gym.Env):
             done = True
 
         # terminate when box collides with tubes
-        if 0 <= xLead <= 100 :
+        # danger zone is between -50 and 100 because box is 50 width and pipe 100
+        if -50 <= xLead <= 100 :
             if (boxY > yTube2) or (boxY-50<yTube1):
                 print("tube hit")
                 self.reward -= 1.5
@@ -129,7 +131,7 @@ class FooEnv(gym.Env):
         if not done:
             self.reward += 0.05
 
-        self.state = (boxY, xLead, yTube1, yTube2, velocity, xBackTube)
+        self.state = (boxY, xLead, yTube1, yTube2,velocity,xBackTube)
 
         return np.array(self.state), self.reward, done, {}
 
@@ -149,10 +151,11 @@ class FooEnv(gym.Env):
 
 
         state = self.state
-        boxY, xLead, yTube1, yTube2, velocity, xBackTube = state
+        boxY, xLead, yTube1, yTube2,velocity,xBackTube = state
 
         self.boxWidth = 50
         self.boxHeight = boxY-50
+        # xBackTube=xLead+100
 
         self.tubesWidth=xBackTube - xLead
 
